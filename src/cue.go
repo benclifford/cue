@@ -38,47 +38,28 @@ func main() {
 	var rootFilename string = sharedTmpDir + "/rootfile" // TODO
 
 	rootFile, err := os.Create(rootFilename)
-
-	if err != nil {
-		fmt.Printf("cue: ERROR: when opening rootFile %s: %s", rootFile, err)
-		os.Exit(67)
-	}
+	exitOnError("when opening rootfile", 67, err)
 
 	defer rootFile.Close()
 
 	_, err = rootFile.WriteString("#!/bin/bash\necho cue: root: starting initialisation\n")
-	if err != nil {
-		fmt.Printf("cue: ERROR: writing to rootFile: %s", err)
-		os.Exit(68)
-	}
+	exitOnError("writing to rootFile", 68, err)
 
 	err = rootFile.Chmod(0755)
-
-	if err != nil {
-		fmt.Printf("cue: ERROR: chmod rootFile: %s", err)
-		os.Exit(69)
-	}
+	exitOnError("chmod'ing rootFile", 69, err)
 
 	// TODO: factor with root file creation (eg. createSharedScript())
 	var userFilename string = sharedTmpDir + "/userfile" // TODO
 	userFile, err := os.Create(userFilename)
-	if err != nil {
-		fmt.Printf("cue: ERROR: when opening userFile %s: %s", userFile, err)
-		os.Exit(70)
-	}
+	exitOnError("when opening userFile", 70, err)
+
 	defer userFile.Close()
 
 	_, err = userFile.WriteString("#!/bin/bash\necho cue: user: starting initialisation\n")
-	if err != nil {
-		fmt.Printf("cue: ERROR: writing to userFile: %s", err)
-		os.Exit(68)
-	}
+	exitOnError("writing to userFile", 73, err)
 
 	err = userFile.Chmod(0755)
-	if err != nil {
-		fmt.Printf("cue: ERROR: chmod rootFile: %s", err)
-		os.Exit(72)
-	}
+	exitOnError("chmod'ing userFile", 72, err)
 
 	// Create user
 	// TODO: read from current user information
@@ -87,66 +68,38 @@ func main() {
 	uid := "1000"
 
 	_, err = rootFile.WriteString("echo cue: root: creating local user\n")
-	if err != nil {
-		fmt.Printf("cue: ERROR: writing to rootFile: %s", err)
-		os.Exit(68)
-	}
+	exitOnError("writing to rootFile", 68, err)
 
 	_, err = rootFile.WriteString("useradd " + userName + " --uid=" + uid + "\n")
-	if err != nil {
-		fmt.Printf("cue: ERROR: writing to rootFile: %s", err)
-		os.Exit(68)
-	}
+	exitOnError("writing to rootFile", 68, err)
 
 	// Diddle sudo
 
 	_, err = rootFile.WriteString("echo '%sudo   ALL=(ALL:ALL) NOPASSWD: ALL' > /etc/sudoers\n")
-	if err != nil {
-		fmt.Printf("cue: ERROR: writing to rootFile: %s", err)
-		os.Exit(68)
-	}
+	exitOnError("writing to rootFile", 68, err)
 
 	_, err = rootFile.WriteString("adduser root sudo\n")
-	if err != nil {
-		fmt.Printf("cue: ERROR: writing to rootFile: %s", err)
-		os.Exit(68)
-	}
+	exitOnError("writing to rootFile", 68, err)
+
 	_, err = rootFile.WriteString("adduser " + userName + " sudo\n")
-	if err != nil {
-		fmt.Printf("cue: ERROR: writing to rootFile: %s", err)
-		os.Exit(68)
-	}
+	exitOnError("writing to rootFile", 68, err)
 
 	// Run user shell (TODO: run user command)
 	_, err = userFile.WriteString("/bin/bash\n")
-	if err != nil {
-		fmt.Printf("cue: ERROR: writing to userFile: %s", err)
-		os.Exit(68)
-	}
+	exitOnError("writing to userFile", 73, err)
 
 	// Run user level initialisation
 	_, err = rootFile.WriteString("echo cue: root: running user level\n")
-	if err != nil {
-		fmt.Printf("cue: ERROR: writing to rootFile: %s", err)
-		os.Exit(68)
-	}
+	exitOnError("writing to rootFile", 68, err)
+
 	_, err = rootFile.WriteString("sudo -u " + userName + " -i " + userFilename + "\n")
-	if err != nil {
-		fmt.Printf("cue: ERROR: writing to rootFile: %s", err)
-		os.Exit(68)
-	}
+	exitOnError("writing to rootFile", 68, err)
 
 	err = rootFile.Close()
-	if err != nil {
-		fmt.Printf("cue: ERROR: closing rootFile: %s", err)
-		os.Exit(69)
-	}
+	exitOnError("closing rootFile", 69, err)
 
 	err = userFile.Close()
-	if err != nil {
-		fmt.Printf("cue: ERROR: closing userFile: %s", err)
-		os.Exit(71)
-	}
+	exitOnError("closing userFile", 71, err)
 
 	runImage(imageId, rootFilename)
 
@@ -161,17 +114,10 @@ func runImage(imageId string, rootFile string) {
 
 	// TODO: get docker from the path
 	process, err := os.StartProcess("/usr/bin/docker", []string{"docker", "run", "--rm", "-ti", "-v", "/home/benc:/home/benc", imageId, rootFile}, &attributes)
-
-	if err != nil {
-		fmt.Printf("cue: runImage: ERROR: running docker container: %s\n", err)
-		os.Exit(65)
-	}
+	exitOnError("running Docker container", 65, err)
 
 	status, err := process.Wait()
-	if err != nil {
-		fmt.Printf("cue: runImage: ERROR: docker container process wait returned: %s\nstatus: %s", err, status)
-		os.Exit(66)
-	}
+	exitOnError("waiting for Docker container process", 66, err)
 
 	fmt.Printf("cue: runImage: docker container process finished with status: %s\n", status)
 
@@ -189,12 +135,16 @@ func resolveNameToImage(environment string) string {
 	cmd := "docker"
 	args := []string{"build", "--quiet", "/home/benc/src/cue/dockerfiles/" + environment}
 	output, err := exec.Command(cmd, args...).CombinedOutput()
-	if err != nil {
-		fmt.Printf("cue: resolveNameToImage: ERROR: error resolving name to image, running docker build: %s\n%s", err, output)
-		os.Exit(64)
-	}
+	exitOnError("running Docker build", 64, err)
 
 	fmt.Printf("cue: resolveNameToImage: successful output from docker build:\n%s\n", output)
 
 	return strings.TrimSpace(string(output))
+}
+
+func exitOnError(message string, exitCode int, err error) {
+	if err != nil {
+		fmt.Printf("cue: ERROR: %s: %s\n", message, err)
+		os.Exit(exitCode)
+	}
 }
