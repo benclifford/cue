@@ -85,6 +85,15 @@ func main() {
 	exitOnError("writing to rootFile", 68, err)
 
 	// Run user shell (TODO: run user command)
+	_, err = userFile.WriteString("#!/bin/bash\n")
+	exitOnError("writing to userFile", 73, err)
+
+	workdir, err := os.Getwd()
+	exitOnError("getting workdir", 74, err)
+
+	_, err = userFile.WriteString("cd " + workdir + "\n")
+	exitOnError("writing to userFile", 73, err)
+
 	_, err = userFile.WriteString("/bin/bash\n")
 	exitOnError("writing to userFile", 73, err)
 
