@@ -12,6 +12,11 @@ func main() {
 
 	var environmentName string
 
+	if len(os.Args) < 2 {
+		fmt.Printf("cue: usage: cue <image name>\n")
+		os.Exit(75)
+	}
+
 	environmentName = os.Args[1]
 
 	fmt.Printf("cue: environment: %s\n", environmentName)
