@@ -11,3 +11,5 @@ RUN apt-get update && apt-get install -y vim
 
 RUN apt-get update && apt-get install -y emacs
 
+RUN apt-get update && apt-get install -y irssi
+
