@@ -66,6 +66,8 @@ func main() {
 	err = userFile.Chmod(0755)
 	exitOnError("chmod'ing userFile", 72, err)
 
+	extraArgs := []string{}
+
 	// Create user
 	// TODO: read from current user information
 
@@ -99,9 +101,6 @@ func main() {
 	_, err = userFile.WriteString("cd " + workdir + "\n")
 	exitOnError("writing to userFile", 73, err)
 
-	_, err = userFile.WriteString("/bin/bash\n")
-	exitOnError("writing to userFile", 73, err)
-
 	// Run user level initialisation
 	_, err = rootFile.WriteString("echo cue: root: running user level\n")
 	exitOnError("writing to rootFile", 68, err)
@@ -109,25 +108,48 @@ func main() {
 	_, err = rootFile.WriteString("sudo -u " + userName + " -i " + userFilename + "\n")
 	exitOnError("writing to rootFile", 68, err)
 
+	// TODO: if $DISPLAY is set to :0, mount
+	// /tmp/.X11-unix/X0 into the container.
+	// This could be generalised to arbitrary $DISPLAY values
+	// with more effort.
+
+	display := os.Getenv("DISPLAY")
+	if display == ":0" {
+		fmt.Printf("cue: mounting X server\n")
+		extraArgs = append(extraArgs, "-v", "/tmp/.X11-unix/X0:/tmp/.X11-unix/X0")
+		_, err = userFile.WriteString("export DISPLAY=:0\n")
+		exitOnError("writing to userFile", 73, err)
+	}
+
+	// After everything else is done, run a shell
+	// or TODO eventually a passed-in command
+	_, err = userFile.WriteString("/bin/bash\n")
+	exitOnError("writing to userFile", 73, err)
+
 	err = rootFile.Close()
 	exitOnError("closing rootFile", 69, err)
 
 	err = userFile.Close()
 	exitOnError("closing userFile", 71, err)
 
-	runImage(imageId, rootFilename)
+	runImage(imageId, rootFilename, extraArgs)
 
 	fmt.Printf("cue: done\n")
 	// TODO: return container exit code
 }
 
-func runImage(imageId string, rootFile string) {
+func runImage(imageId string, rootFile string, dockerArgs []string) {
 	attributes := os.ProcAttr{
 		Files: []*os.File{os.Stdin, os.Stdout, os.Stderr},
 	}
 
 	// TODO: get docker from the path
-	process, err := os.StartProcess("/usr/bin/docker", []string{"docker", "run", "--rm", "-ti", "-v", "/home/benc:/home/benc", imageId, rootFile}, &attributes)
+
+	argsPre := []string{"docker", "run", "--rm", "-ti", "-v", "/home/benc:/home/benc"}
+	argsPost := []string{imageId, rootFile}
+	args := append(argsPre, append(dockerArgs, argsPost...)...)
+
+	process, err := os.StartProcess("/usr/bin/docker", args, &attributes)
 	exitOnError("running Docker container", 65, err)
 
 	status, err := process.Wait()
