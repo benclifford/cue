@@ -1,0 +1,30 @@
+Bootstrap: (if you don't have cue around to run the godev environment
+to build cue...)
+
+* check out cue into ~/src/cue
+
+* build the godev environment
+
+  cd dockerfiles/godev
+  docker build .
+  ... Successfully built 1123ddcc0d1f
+
+ii. build cue by hand inside such a container:
+  cd ~/cue (or wherever it is checked out)
+  docker run --rm -ti  -v $(pwd):/cue 1123ddcc0d1f /bin/bash
+  sudo -i   # to get profiles run, to get 'go' on the path
+  cd /cue/src
+  go build cue.go
+
+  # the build cue.go will have the wrong permissions
+
+mkdir ~/tmp/cue
+
+cue godev
+
+now rebuild cue inside godev:
+
+ cd src/
+ rm cue # remove the root owned one.
+ go build cue.go
+
