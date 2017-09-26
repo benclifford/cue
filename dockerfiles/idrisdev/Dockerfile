@@ -21,5 +21,10 @@ RUN apt-get update && apt-get install -y cabal-install zlib1g-dev make netbase
 # 'pkg-config' for building idris with ffi
 RUN apt-get update && apt-get install -y pkg-config
 
-RUN cabal update && cabal install --global -f FFI -f GMP idris
+RUN cabal update && cabal install --global -f FFI -f GMP idris-1.1.1
 
+# above this, idris is installed and available
+# the following are needed for todaybot
+# ideally they'd live in a different docker env but depending on the
+# idris one, or something like that...
+RUN apt-get update && apt-get install -y libcurl4-openssl-dev
