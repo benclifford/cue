@@ -7,6 +7,12 @@ import (
 	"strings"
 )
 
+const hardCodedHomeDir = "/home/benc"
+const hardcodedTmpDir = hardCodedHomeDir + "/tmp/cue" // TODO
+const hardcodedUserName = "benc"
+const hardcodedUid = "1000"
+const hardcodedDockerfileLibrary = hardCodedHomeDir + "/src/cue/dockerfiles/"
+
 func main() {
 	fmt.Printf("cue: starting\n")
 
@@ -37,7 +43,7 @@ func main() {
 	// restartable, if such a mode is desired - allowing the
 	// shared temp directory to be cleared out but the container
 	// to still start up properly)
-	var sharedTmpDir string = "/home/benc/tmp/cue" // TODO
+	var sharedTmpDir string = hardcodedTmpDir // TODO
 	fmt.Printf("cue: shared temporary directory: %s\n", sharedTmpDir)
 
 	var rootFilename string = sharedTmpDir + "/rootfile" // TODO
@@ -71,8 +77,8 @@ func main() {
 	// Create user
 	// TODO: read from current user information
 
-	userName := "benc"
-	uid := "1000"
+	userName := hardcodedUserName
+	uid := hardcodedUid
 
 	_, err = rootFile.WriteString("echo cue: root: creating local user\n")
 	exitOnError("writing to rootFile", 68, err)
@@ -145,7 +151,8 @@ func runImage(imageId string, rootFile string, dockerArgs []string) {
 
 	// TODO: get docker from the path
 
-	argsPre := []string{"docker", "run", "--rm", "-ti", "-v", "/home/benc:/home/benc"}
+	homeDir := hardCodedHomeDir
+	argsPre := []string{"docker", "run", "--rm", "-ti", "-v", homeDir + ":" + homeDir}
 	argsPost := []string{imageId, rootFile}
 	args := append(argsPre, append(dockerArgs, argsPost...)...)
 
@@ -169,7 +176,7 @@ func runImage(imageId string, rootFile string, dockerArgs []string) {
 // rebuilding anyway.
 func resolveNameToImage(environment string) string {
 	cmd := "docker"
-	args := []string{"build", "--quiet", "/home/benc/src/cue/dockerfiles/" + environment}
+	args := []string{"build", "--quiet", hardcodedDockerfileLibrary + "/" + environment}
 	output, err := exec.Command(cmd, args...).CombinedOutput()
 	exitOnError("running Docker build", 64, err)
 
