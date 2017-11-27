@@ -46,6 +46,10 @@ func main() {
 	var sharedTmpDir string = hardcodedTmpDir // TODO
 	fmt.Printf("cue: shared temporary directory: %s\n", sharedTmpDir)
 
+	fmt.Printf("cue: creating temporary directory\n")
+	err := os.MkdirAll(sharedTmpDir, 0755)
+	exitOnError("when creating temporary directory", 76, err)
+
 	var rootFilename string = sharedTmpDir + "/rootfile" // TODO
 
 	rootFile, err := os.Create(rootFilename)
