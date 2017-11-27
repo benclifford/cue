@@ -4,14 +4,9 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"os/user"
 	"strings"
 )
-
-const hardCodedHomeDir = "/home/benc"
-const hardcodedTmpDir = hardCodedHomeDir + "/tmp/cue" // TODO
-const hardcodedUserName = "benc"
-const hardcodedUid = "1000"
-const hardcodedDockerfileLibrary = hardCodedHomeDir + "/src/cue/dockerfiles/"
 
 func main() {
 	fmt.Printf("cue: starting\n")
@@ -43,7 +38,8 @@ func main() {
 	// restartable, if such a mode is desired - allowing the
 	// shared temp directory to be cleared out but the container
 	// to still start up properly)
-	var sharedTmpDir string = hardcodedTmpDir // TODO
+
+	var sharedTmpDir string = getHomeDir() + "/tmp/cue" // TODO
 	fmt.Printf("cue: shared temporary directory: %s\n", sharedTmpDir)
 
 	fmt.Printf("cue: creating temporary directory\n")
@@ -81,8 +77,8 @@ func main() {
 	// Create user
 	// TODO: read from current user information
 
-	userName := hardcodedUserName
-	uid := hardcodedUid
+	userName := getUsername()
+	uid := getUid()
 
 	_, err = rootFile.WriteString("echo cue: root: creating local user\n")
 	exitOnError("writing to rootFile", 68, err)
@@ -155,7 +151,7 @@ func runImage(imageId string, rootFile string, dockerArgs []string) {
 
 	// TODO: get docker from the path
 
-	homeDir := hardCodedHomeDir
+	homeDir := getHomeDir()
 	argsPre := []string{"docker", "run", "--rm", "-ti", "-v", homeDir + ":" + homeDir}
 	argsPost := []string{imageId, rootFile}
 	args := append(argsPre, append(dockerArgs, argsPost...)...)
@@ -180,7 +176,9 @@ func runImage(imageId string, rootFile string, dockerArgs []string) {
 // rebuilding anyway.
 func resolveNameToImage(environment string) string {
 	cmd := "docker"
-	args := []string{"build", "--quiet", hardcodedDockerfileLibrary + "/" + environment}
+
+	dockerfileLibrary := getHomeDir() + "/src/cue/dockerfiles/"
+	args := []string{"build", "--quiet", dockerfileLibrary + "/" + environment}
 	output, err := exec.Command(cmd, args...).CombinedOutput()
 	exitOnError("running Docker build", 64, err)
 
@@ -195,3 +193,22 @@ func exitOnError(message string, exitCode int, err error) {
 		os.Exit(exitCode)
 	}
 }
+
+func getHomeDir() string {
+	usr, err := user.Current()
+	exitOnError("Getting current user info", 77, err)
+	return usr.HomeDir
+}
+
+func getUsername() string {
+	usr, err := user.Current()
+	exitOnError("Getting current user info", 77, err)
+	return usr.Username
+}
+
+func getUid() string {
+	usr, err := user.Current()
+	exitOnError("Getting current user info", 77, err)
+	return usr.Uid
+}
+
