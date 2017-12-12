@@ -46,6 +46,5 @@ RUN echo 'export PATH=$PATH:/arduino-1.8.5' > /etc/profile.d/arduino.sh
 RUN echo 'export _JAVA_AWT_WM_NONREPARENTING=1' >> /etc/profile.d/arduino.sh
 
 # now build stuff like this:
-# if using GUI: export _JAVA_AWT_WM_NONREPARENTING=1
-# arduino-builder -hardware /arduino-1.8.5/hardware -tools /arduino-1.8.5/tools -tools /arduino-1.8.5/hardware/tools/ -fqbn arduino:avr:uno -libraries /lib-thirdparty/ -tools /arduino-1.8.5/tools-builder/ ./goggles1.ino
+# arduino-builder -hardware /arduino-1.8.5/hardware -tools /arduino-1.8.5/tools -tools /arduino-1.8.5/hardware/tools/ -fqbn adafruit:avr:trinket3 -libraries /lib-thirdparty/ -tools /arduino-1.8.5/tools-builder/ -hardware /hardware-thirdparty/ ./goggles1.ino
 
