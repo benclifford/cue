@@ -48,3 +48,5 @@ RUN echo 'export _JAVA_AWT_WM_NONREPARENTING=1' >> /etc/profile.d/arduino.sh
 # now build stuff like this:
 # arduino-builder -hardware /arduino-1.8.5/hardware -tools /arduino-1.8.5/tools -tools /arduino-1.8.5/hardware/tools/ -fqbn adafruit:avr:trinket3 -libraries /lib-thirdparty/ -tools /arduino-1.8.5/tools-builder/ -hardware /hardware-thirdparty/ ./goggles1.ino
 
+# to help look at what is plugged into the usb ports:
+RUN apt-get update && apt-get install -y usbutils
