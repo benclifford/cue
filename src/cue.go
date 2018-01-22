@@ -14,7 +14,7 @@ func main() {
 	var environmentName string
 
 	if len(os.Args) < 2 {
-		fmt.Printf("cue: usage: cue <image name>\n")
+		fmt.Printf("cue: usage: cue <image name> [cmd]\n")
 		os.Exit(75)
 	}
 
@@ -128,9 +128,29 @@ func main() {
 	}
 
 	// After everything else is done, run a shell
-	// or TODO eventually a passed-in command
-	_, err = userFile.WriteString("/bin/bash\n")
-	exitOnError("writing to userFile", 73, err)
+	// or eventually a passed-in command.
+
+	// TODO: the choice of shell is interesting here.
+	// Should it be the user's default shell, which is not necessarily
+	// installed?
+
+	if len(os.Args) == 2 {
+		_, err = userFile.WriteString("/bin/bash\n")
+		exitOnError("writing user shell to userFile", 73, err)
+	} else {
+		// TODO: there will be some string escaping bug here
+		// one day, but string escaping in shell frustrates me
+		// too much to deal with at time of writing.
+		for _, element := range os.Args[2:] {
+			_, err = userFile.WriteString(element)
+			exitOnError("writing user command to userFile", 73, err)
+			_, err = userFile.WriteString(" ")
+			exitOnError("writing user command to userFile", 73, err)
+		}
+		exitOnError("writing user command to userFile", 73, err)
+		_, err = userFile.WriteString("\n")
+		exitOnError("writing user command newline to userFile", 73, err)
+	}
 
 	err = rootFile.Close()
 	exitOnError("closing rootFile", 69, err)
@@ -211,4 +231,3 @@ func getUid() string {
 	exitOnError("Getting current user info", 77, err)
 	return usr.Uid
 }
-
