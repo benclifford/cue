@@ -8,3 +8,4 @@ RUN apt-get update && apt-get install -y youtube-dl
 
 RUN apt-get update && apt-get install -y sox libsox-fmt-all
 
+RUN apt-get update && apt-get install -y irssi
