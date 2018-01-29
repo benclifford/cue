@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/pborman/getopt/v2"
 	"os"
 	"os/exec"
 	"os/user"
@@ -10,15 +11,22 @@ import (
 
 func main() {
 	fmt.Printf("cue: starting\n")
+	var optPrivileged = getopt.BoolLong("privileged", 'P', "", "add assorted extra privileges")
+
+	getopt.Parse()
+
+	fmt.Printf("cue: parsed options\n")
 
 	var environmentName string
 
-	if len(os.Args) < 2 {
+	var cmdlineArgs = getopt.Args()
+
+	if len(cmdlineArgs) < 1 {
 		fmt.Printf("cue: usage: cue <image name> [cmd]\n")
 		os.Exit(75)
 	}
 
-	environmentName = os.Args[1]
+	environmentName = cmdlineArgs[0]
 
 	fmt.Printf("cue: environment: %s\n", environmentName)
 
@@ -134,14 +142,14 @@ func main() {
 	// Should it be the user's default shell, which is not necessarily
 	// installed?
 
-	if len(os.Args) == 2 {
+	if len(cmdlineArgs) == 1 {
 		_, err = userFile.WriteString("/bin/bash\n")
 		exitOnError("writing user shell to userFile", 73, err)
 	} else {
 		// TODO: there will be some string escaping bug here
 		// one day, but string escaping in shell frustrates me
 		// too much to deal with at time of writing.
-		for _, element := range os.Args[2:] {
+		for _, element := range cmdlineArgs[1:] {
 			_, err = userFile.WriteString(element)
 			exitOnError("writing user command to userFile", 73, err)
 			_, err = userFile.WriteString(" ")
@@ -158,13 +166,13 @@ func main() {
 	err = userFile.Close()
 	exitOnError("closing userFile", 71, err)
 
-	runImage(imageId, rootFilename, extraArgs)
+	runImage(imageId, rootFilename, extraArgs, *optPrivileged)
 
 	fmt.Printf("cue: done\n")
 	// TODO: return container exit code
 }
 
-func runImage(imageId string, rootFile string, dockerArgs []string) {
+func runImage(imageId string, rootFile string, dockerArgs []string, privileged bool) {
 	attributes := os.ProcAttr{
 		Files: []*os.File{os.Stdin, os.Stdout, os.Stderr},
 	}
@@ -172,7 +180,21 @@ func runImage(imageId string, rootFile string, dockerArgs []string) {
 	// TODO: get docker from the path
 
 	homeDir := getHomeDir()
+
 	argsPre := []string{"docker", "run", "--rm", "-ti", "-v", homeDir + ":" + homeDir}
+
+	argsPrivileged := []string{}
+
+	if privileged {
+		// volume mount /dev/bus/usb: if not, a /dev/bus/usb is created that appears to be a replicate of the container start time /dev/bus/usb, not the "live" version with new devices.
+		// forward port 8080 for MSE development
+		fmt.Print("cue: runImage: adding extra privileges\n")
+		argsPrivileged = []string{"-v", "/dev/bus/usb:/dev/bus/usb", "--privileged", "-p", "8080"}
+
+	}
+
+	argsPre = append(argsPre, argsPrivileged...)
+
 	argsPost := []string{imageId, rootFile}
 	args := append(argsPre, append(dockerArgs, argsPost...)...)
 
