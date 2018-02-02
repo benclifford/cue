@@ -1,12 +1,11 @@
-# 'go' build environment
+# debian stretch general work environment
 
 FROM debian:stretch
 
-RUN apt-get update && apt-get install -y sudo curl
+RUN apt-get update && apt-get install -y sudo
 
-RUN apt-get update && apt-get install -y youtube-dl
+RUN apt-get update && apt-get install -y youtube-dl sox libsox-fmt-all irssi alpine curl
 
-RUN apt-get update && apt-get install -y sox libsox-fmt-all
+RUN apt-get update && apt-get install -y direwolf
 
-RUN apt-get update && apt-get install -y irssi
-RUN apt-get update && apt-get install -y alpine
+RUN apt-get update && apt-get install -y gqrx-sdr
