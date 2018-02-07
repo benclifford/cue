@@ -14,7 +14,9 @@ ii. build cue by hand inside such a container:
   docker run --rm -ti  -v $(pwd):/cue 1123ddcc0d1f /bin/bash
   sudo -i   # to get profiles run, to get 'go' on the path
   cd /cue/src
-  go build cue.go
+  export GOPATH=$(pwd)
+  go get cue
+  go install cue
 
   # the build cue.go will have the wrong permissions
 
@@ -25,6 +27,7 @@ cue godev
 now rebuild cue inside godev:
 
  cd src/
- rm cue # remove the root owned one.
- go build cue.go
+ export GOPATH=$(pwd)
+ go get cue 
+ go install cue
 
