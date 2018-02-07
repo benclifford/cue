@@ -9,6 +9,9 @@ to build cue...)
   docker build .
   ... Successfully built 1123ddcc0d1f
 
+  If you're on a Raspberry Pi, use the dockerfiles/godev-rpi
+  directory instead.
+
 ii. build cue by hand inside such a container:
   cd ~/cue (or wherever it is checked out)
   docker run --rm -ti  -v $(pwd):/cue 1123ddcc0d1f /bin/bash
