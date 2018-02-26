@@ -9,3 +9,7 @@ RUN apt-get update && apt-get install -y youtube-dl sox libsox-fmt-all irssi alp
 RUN apt-get update && apt-get install -y direwolf
 
 RUN apt-get update && apt-get install -y gqrx-sdr
+
+RUN apt-get update && apt-get install -y less vim
+
+RUN apt-get update && apt-get install -y less gthumb
