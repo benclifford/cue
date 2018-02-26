@@ -34,3 +34,6 @@ now rebuild cue inside godev:
  go get cue 
  go install cue
 
+
+See also:
+https://github.com/Yelp/dockersh
