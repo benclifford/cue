@@ -13,6 +13,8 @@ func main() {
 	fmt.Printf("cue: starting\n")
 	var optPrivileged = getopt.BoolLong("privileged", 'P', "", "add assorted extra privileges")
 
+	var optExtra = getopt.StringLong("docker-args", 'D', "", "add extra docker command-line arguments")
+
 	getopt.Parse()
 
 	fmt.Printf("cue: parsed options\n")
@@ -133,6 +135,14 @@ func main() {
 		extraArgs = append(extraArgs, "-v", "/tmp/.X11-unix/X0:/tmp/.X11-unix/X0")
 		_, err = userFile.WriteString("export DISPLAY=:0\n")
 		exitOnError("writing to userFile", 73, err)
+	}
+
+	// Handle docker extra args
+	ex := *optExtra
+	if(ex != "") {
+		axs := strings.Split(*optExtra, " ")
+		fmt.Printf("cue: docker extra args: %d >%s<\n", len(axs), ex)
+		extraArgs = append(extraArgs, axs...)
 	}
 
 	// After everything else is done, run a shell
