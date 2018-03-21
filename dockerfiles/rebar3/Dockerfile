@@ -2,7 +2,17 @@ FROM debian:stretch
 
 RUN apt-get update && apt-get install -y sudo
 
-RUN apt-get update && apt-get install -y wget
+# install-time deps
+RUN apt-get update && apt-get install -y wget 
+
+# runtime deps for rebar3
+RUN apt-get update && apt-get install -y erlang
+
+# runtime deps for specific erlang packages that I want to compile
+# using rebar3:
+
+# jiffy
+RUN apt-get update && apt-get install -y gcc g++
 
 # instructions from https://github.com/erlang/rebar3
 WORKDIR /bin
