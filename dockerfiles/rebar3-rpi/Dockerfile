@@ -1,4 +1,4 @@
-FROM debian:stretch
+FROM resin/rpi-raspbian:stretch
 
 RUN apt-get update && apt-get install -y sudo
 
