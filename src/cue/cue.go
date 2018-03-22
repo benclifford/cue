@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"os/user"
 	"strings"
+	"syscall"
 )
 
 func main() {
@@ -176,13 +177,13 @@ func main() {
 	err = userFile.Close()
 	exitOnError("closing userFile", 71, err)
 
-	runImage(imageId, rootFilename, extraArgs, *optPrivileged)
+	exitStatus := runImage(imageId, rootFilename, extraArgs, *optPrivileged)
 
 	fmt.Printf("cue: done\n")
-	// TODO: return container exit code
+	os.Exit(exitStatus)
 }
 
-func runImage(imageId string, rootFile string, dockerArgs []string, privileged bool) {
+func runImage(imageId string, rootFile string, dockerArgs []string, privileged bool) int {
 	attributes := os.ProcAttr{
 		Files: []*os.File{os.Stdin, os.Stdout, os.Stderr},
 	}
@@ -216,6 +217,9 @@ func runImage(imageId string, rootFile string, dockerArgs []string, privileged b
 
 	fmt.Printf("cue: runImage: docker container process finished with status: %s\n", status)
 
+	ws := status.Sys().(syscall.WaitStatus)
+
+	return ws.ExitStatus()
 }
 
 // given a name, resolves it to a docker image ID
