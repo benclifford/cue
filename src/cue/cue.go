@@ -140,7 +140,7 @@ func main() {
 
 	// Handle docker extra args
 	ex := *optExtra
-	if(ex != "") {
+	if ex != "" {
 		axs := strings.Split(*optExtra, " ")
 		fmt.Printf("cue: docker extra args: %d >%s<\n", len(axs), ex)
 		extraArgs = append(extraArgs, axs...)
@@ -223,24 +223,37 @@ func runImage(imageId string, rootFile string, dockerArgs []string, privileged b
 }
 
 // given a name, resolves it to a docker image ID
-// perhaps one day doing something fancy but for now
-// using a directory containing <environment>/Dockerfile
-// so basically wraps a call to docker build.
-// docker build will be run every time, but usually will
-// be fast (as the output will be cached), and when it
-// isn't fast, it is because the environment needed
+
+// If a directory <environment>/Dockerfile exists, it
+// will be build and used.
+// (in this case, docker build will be run every time,
+// but usually will // be fast (as the output will be cached),
+// and when it isn't fast, it is because the environment needed
 // rebuilding anyway.
+
+// Otherwise, the environment name will be passed directly
+// to docker to be resolved - for example as a container ID
+// or docker image tag.
+
 func resolveNameToImage(environment string) string {
-	cmd := "docker"
 
 	dockerfileLibrary := getHomeDir() + "/src/cue/dockerfiles/"
-	args := []string{"build", "--quiet", dockerfileLibrary + "/" + environment}
-	output, err := exec.Command(cmd, args...).CombinedOutput()
-	exitOnError("running Docker build", 64, err)
+	environmentPath := dockerfileLibrary + "/" + environment
 
-	fmt.Printf("cue: resolveNameToImage: successful output from docker build:\n%s\n", output)
+	if stat, err := os.Stat(environmentPath); err == nil && stat.IsDir() {
+		fmt.Printf("cue: resolveNameToImage: environment directory exists - using docker build\n")
+		cmd := "docker"
 
-	return strings.TrimSpace(string(output))
+		args := []string{"build", "--quiet", environmentPath}
+		output, err := exec.Command(cmd, args...).CombinedOutput()
+		exitOnError("running Docker build", 64, err)
+
+		fmt.Printf("cue: resolveNameToImage: successful output from docker build:\n%s\n", output)
+		return strings.TrimSpace(string(output))
+	} else {
+		fmt.Printf("cue: resolveNameToImage: environment directory exists - using name as raw docker image identifier\n")
+		return strings.TrimSpace(environment)
+	}
 }
 
 func exitOnError(message string, exitCode int, err error) {
