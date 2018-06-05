@@ -251,7 +251,7 @@ func resolveNameToImage(environment string) string {
 		fmt.Printf("cue: resolveNameToImage: successful output from docker build:\n%s\n", output)
 		return strings.TrimSpace(string(output))
 	} else {
-		fmt.Printf("cue: resolveNameToImage: environment directory exists - using name as raw docker image identifier\n")
+		fmt.Printf("cue: resolveNameToImage: environment directory does not exist - using name as raw docker image identifier\n")
 		return strings.TrimSpace(environment)
 	}
 }
