@@ -29,11 +29,27 @@ cue godev
 
 now rebuild cue inside godev:
 
- cd src/
+ cd ~/cue
  export GOPATH=$(pwd)
  go get cue 
  go install cue
 
 
 See also:
+
 https://github.com/Yelp/dockersh
+
+other non-docker container-style technologies:
+lxc
+fakeroot-ng + chroot + debootstrap
+just chroot
+VMs
+
+jessie frazelle has Dockerfiles and commandlines for running
+a bunch of apps in docker on the desktop. The main difference in
+approach there is only mounting the parts of ~ that are necessary
+- so more security, where `cue` is aimed at less security for your
+homedir.
+
+https://blog.jessfraz.com/post/docker-containers-on-the-desktop/
+
