@@ -44,6 +44,8 @@ lxc
 fakeroot-ng + chroot + debootstrap
 just chroot
 VMs
+singularity
+shifter - https://github.com/NERSC/shifter
 
 jessie frazelle has Dockerfiles and commandlines for running
 a bunch of apps in docker on the desktop. The main difference in
