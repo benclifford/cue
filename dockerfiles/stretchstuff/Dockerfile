@@ -19,3 +19,6 @@ RUN apt-get update && apt-get install -y less libreoffice
 RUN apt-get update && apt-get install -y texlive-latex-base xpdf
 
 RUN apt-get update && apt-get install -y dnsutils
+
+RUN apt-get update && apt-get install -y whois
+
