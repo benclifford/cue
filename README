@@ -55,3 +55,7 @@ homedir.
 
 https://blog.jessfraz.com/post/docker-containers-on-the-desktop/
 
+https://github.com/Mic92/cntr/ - "cntr is a replacement for docker
+exec that brings all your developers tools with you. "
+
+https://github.com/proot-me/PRoot - chroot, mount --bind, and binfmt_misc without privilege/setup for Linux 
