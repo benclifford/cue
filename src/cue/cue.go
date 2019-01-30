@@ -94,7 +94,7 @@ func main() {
 	_, err = rootFile.WriteString("echo cue: root: creating local user\n")
 	exitOnError("writing to rootFile", 68, err)
 
-	_, err = rootFile.WriteString("useradd " + userName + " --uid=" + uid + "\n")
+	_, err = rootFile.WriteString("useradd " + userName + " --uid=" + uid + " --shell /bin/sh\n")
 	exitOnError("writing to rootFile", 68, err)
 
 	// Diddle sudo
