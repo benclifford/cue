@@ -244,7 +244,10 @@ func resolveNameToImage(environment string) string {
 		fmt.Printf("cue: resolveNameToImage: environment directory exists - using docker build\n")
 		cmd := "docker"
 
-		args := []string{"build", "--quiet", environmentPath}
+		username := getUsername()
+
+		tagname := "cue/" + username + "/" + environment
+		args := []string{"build", "--quiet", "--tag", tagname, environmentPath}
 		output, err := exec.Command(cmd, args...).CombinedOutput()
 		exitOnError("running Docker build", 64, err)
 
