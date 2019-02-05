@@ -10,33 +10,35 @@ import (
 	"syscall"
 )
 
+var optVerbose = getopt.BoolLong("verbose", 'V', "", "output verbose progress information")
+
 func main() {
-	fmt.Printf("cue: starting\n")
+	logInfo("cue: starting\n")
 	var optPrivileged = getopt.BoolLong("privileged", 'P', "", "add assorted extra privileges")
 
 	var optExtra = getopt.StringLong("docker-args", 'D', "", "add extra docker command-line arguments")
 
 	getopt.Parse()
 
-	fmt.Printf("cue: parsed options\n")
+	logInfo("cue: parsed options\n")
 
 	var environmentName string
 
 	var cmdlineArgs = getopt.Args()
 
 	if len(cmdlineArgs) < 1 {
-		fmt.Printf("cue: usage: cue <image name> [cmd]\n")
+		logInfo("cue: usage: cue <image name> [cmd]\n")
 		os.Exit(75)
 	}
 
 	environmentName = cmdlineArgs[0]
 
-	fmt.Printf("cue: environment: %s\n", environmentName)
+	logInfo("cue: environment: %s\n", environmentName)
 
 	var imageId string
 	imageId = resolveNameToImage(environmentName)
 
-	fmt.Printf("cue: image ID: %s\n", imageId)
+	logInfo("cue: image ID: %s\n", imageId)
 
 	// TODO: prep docker commandline, root and user prep files in
 	//       thematic stages
@@ -51,9 +53,9 @@ func main() {
 	// to still start up properly)
 
 	var sharedTmpDir string = getHomeDir() + "/tmp/cue" // TODO
-	fmt.Printf("cue: shared temporary directory: %s\n", sharedTmpDir)
+	logInfo("cue: shared temporary directory: %s\n", sharedTmpDir)
 
-	fmt.Printf("cue: creating temporary directory\n")
+	logInfo("cue: creating temporary directory\n")
 	err := os.MkdirAll(sharedTmpDir, 0755)
 	exitOnError("when creating temporary directory", 76, err)
 
@@ -64,8 +66,13 @@ func main() {
 
 	defer rootFile.Close()
 
-	_, err = rootFile.WriteString("#!/bin/bash\necho cue: root: starting initialisation\n")
+	_, err = rootFile.WriteString("#!/bin/bash\n")
 	exitOnError("writing to rootFile", 68, err)
+
+	if *optVerbose {
+		_, err = rootFile.WriteString("echo cue: root: starting initialisation\n")
+		exitOnError("writing to rootFile", 68, err)
+	}
 
 	err = rootFile.Chmod(0755)
 	exitOnError("chmod'ing rootFile", 69, err)
@@ -77,8 +84,13 @@ func main() {
 
 	defer userFile.Close()
 
-	_, err = userFile.WriteString("#!/bin/bash\necho cue: user: starting initialisation\n")
+	_, err = userFile.WriteString("#!/bin/bash\n")
 	exitOnError("writing to userFile", 73, err)
+
+	if *optVerbose {
+		_, err = userFile.WriteString("echo cue: user: starting initialisation\n")
+		exitOnError("writing to userFile", 73, err)
+	}
 
 	err = userFile.Chmod(0755)
 	exitOnError("chmod'ing userFile", 72, err)
@@ -91,10 +103,12 @@ func main() {
 	userName := getUsername()
 	uid := getUid()
 
-	_, err = rootFile.WriteString("echo cue: root: creating local user\n")
-	exitOnError("writing to rootFile", 68, err)
+	if *optVerbose {
+		_, err = rootFile.WriteString("echo cue: root: creating local user\n")
+		exitOnError("writing to rootFile", 68, err)
+	}
 
-	_, err = rootFile.WriteString("useradd " + userName + " --uid=" + uid + " --shell /bin/sh\n")
+	_, err = rootFile.WriteString("useradd " + userName + " --uid=" + uid + " --shell /bin/sh > /dev/null\n")
 	exitOnError("writing to rootFile", 68, err)
 
 	// Diddle sudo
@@ -102,10 +116,10 @@ func main() {
 	_, err = rootFile.WriteString("echo '%sudo   ALL=(ALL:ALL) NOPASSWD: ALL' > /etc/sudoers\n")
 	exitOnError("writing to rootFile", 68, err)
 
-	_, err = rootFile.WriteString("adduser root sudo\n")
+	_, err = rootFile.WriteString("adduser root sudo > /dev/null\n")
 	exitOnError("writing to rootFile", 68, err)
 
-	_, err = rootFile.WriteString("adduser " + userName + " sudo\n")
+	_, err = rootFile.WriteString("adduser " + userName + " sudo > /dev/null\n")
 	exitOnError("writing to rootFile", 68, err)
 
 	// Run user shell (TODO: run user command)
@@ -119,8 +133,11 @@ func main() {
 	exitOnError("writing to userFile", 73, err)
 
 	// Run user level initialisation
-	_, err = rootFile.WriteString("echo cue: root: running user level\n")
-	exitOnError("writing to rootFile", 68, err)
+
+	if *optVerbose {
+		_, err = rootFile.WriteString("echo cue: root: running user level\n")
+		exitOnError("writing to rootFile", 68, err)
+	}
 
 	_, err = rootFile.WriteString("sudo -u " + userName + " -i " + userFilename + "\n")
 	exitOnError("writing to rootFile", 68, err)
@@ -132,7 +149,7 @@ func main() {
 
 	display := os.Getenv("DISPLAY")
 	if display == ":0" {
-		fmt.Printf("cue: mounting X server\n")
+		logInfo("cue: mounting X server\n")
 		extraArgs = append(extraArgs, "-v", "/tmp/.X11-unix/X0:/tmp/.X11-unix/X0")
 		_, err = userFile.WriteString("export DISPLAY=:0\n")
 		exitOnError("writing to userFile", 73, err)
@@ -142,7 +159,7 @@ func main() {
 	ex := *optExtra
 	if ex != "" {
 		axs := strings.Split(*optExtra, " ")
-		fmt.Printf("cue: docker extra args: %d >%s<\n", len(axs), ex)
+		logInfo("cue: docker extra args: %d >%s<\n", len(axs), ex)
 		extraArgs = append(extraArgs, axs...)
 	}
 
@@ -179,7 +196,7 @@ func main() {
 
 	exitStatus := runImage(imageId, rootFilename, extraArgs, *optPrivileged)
 
-	fmt.Printf("cue: done\n")
+	logInfo("cue: done\n")
 	os.Exit(exitStatus)
 }
 
@@ -215,7 +232,7 @@ func runImage(imageId string, rootFile string, dockerArgs []string, privileged b
 	status, err := process.Wait()
 	exitOnError("waiting for Docker container process", 66, err)
 
-	fmt.Printf("cue: runImage: docker container process finished with status: %s\n", status)
+	logInfo("cue: runImage: docker container process finished with status: %s\n", status)
 
 	ws := status.Sys().(syscall.WaitStatus)
 
@@ -241,7 +258,7 @@ func resolveNameToImage(environment string) string {
 	environmentPath := dockerfileLibrary + "/" + environment
 
 	if stat, err := os.Stat(environmentPath); err == nil && stat.IsDir() {
-		fmt.Printf("cue: resolveNameToImage: environment directory exists - using docker build\n")
+		logInfo("cue: resolveNameToImage: environment directory exists - using docker build\n")
 		cmd := "docker"
 
 		username := getUsername()
@@ -251,17 +268,17 @@ func resolveNameToImage(environment string) string {
 		output, err := exec.Command(cmd, args...).CombinedOutput()
 		exitOnError("running Docker build", 64, err)
 
-		fmt.Printf("cue: resolveNameToImage: successful output from docker build:\n%s\n", output)
+		logInfo("cue: resolveNameToImage: successful output from docker build:\n%s\n", output)
 		return strings.TrimSpace(string(output))
 	} else {
-		fmt.Printf("cue: resolveNameToImage: environment directory does not exist - using name as raw docker image identifier\n")
+		logInfo("cue: resolveNameToImage: environment directory does not exist - using name as raw docker image identifier\n")
 		return strings.TrimSpace(environment)
 	}
 }
 
 func exitOnError(message string, exitCode int, err error) {
 	if err != nil {
-		fmt.Printf("cue: ERROR: %s: %s\n", message, err)
+		logError("cue: ERROR: %s: %s\n", message, err)
 		os.Exit(exitCode)
 	}
 }
@@ -282,4 +299,16 @@ func getUid() string {
 	usr, err := user.Current()
 	exitOnError("Getting current user info", 77, err)
 	return usr.Uid
+}
+
+func logInfo(format string, a ...interface{}) (n int, err error) {
+	if *optVerbose {
+		return fmt.Printf(format, a...)
+	} else {
+		return 0, nil
+	}
+}
+
+func logError(format string, a ...interface{}) (n int, err error) {
+	return fmt.Printf(format, a...)
 }
