@@ -10,5 +10,5 @@ RUN apt-get update && apt-get install -y pkg-config libssl-dev
 
 RUN cargo install --root /pijul pijul
 
-RUN echo 'export PATH=/pijul/bin:$PATH' > /etc/profile.d/go.sh
+RUN echo 'export PATH=/pijul/bin:$PATH' > /etc/profile.d/pijul.sh
 
