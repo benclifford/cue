@@ -12,6 +12,8 @@ RUN apt-get update && apt-get install -y curl
 # running repeatedly, fixing library error messages until it worked.
 RUN apt-get update && apt-get install -y libxext6 libxext-dev libfreetype6 libxrender1 libfontconfig1
 
+RUN apt-get update && apt-get install -y libxml2
+
 
 # Inside a container it seems like QT gets upset running X windows without
 # being able to do shared memory - this causes it to not try to do so.
