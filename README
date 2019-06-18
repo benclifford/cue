@@ -16,7 +16,7 @@ ii. build cue by hand inside such a container:
   cd ~/cue (or wherever it is checked out)
   docker run --rm -ti  -v $(pwd):/cue 1123ddcc0d1f /bin/bash
   sudo -i   # to get profiles run, to get 'go' on the path
-  cd /cue/src
+  cd /cue
   export GOPATH=$(pwd)
   go get cue
   go install cue
