@@ -26,3 +26,4 @@ RUN apt-get update && apt-get install -y texlive-latex-recommended texlive-latex
 
 RUN apt-get update && apt-get install -y git
 
+RUN apt-get update && apt-get install -y less zip
