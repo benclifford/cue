@@ -8,6 +8,7 @@ import (
 	"os/user"
 	"strings"
 	"syscall"
+        "github.com/rs/xid"
 )
 
 var optVerbose = getopt.BoolLong("verbose", 'V', "", "output verbose progress information")
@@ -59,7 +60,10 @@ func main() {
 	err := os.MkdirAll(sharedTmpDir, 0755)
 	exitOnError("when creating temporary directory", 76, err)
 
-	var rootFilename string = sharedTmpDir + "/rootfile" // TODO
+	userName := getUsername()
+        id := userName + "-" + xid.New().String()
+
+	var rootFilename string = sharedTmpDir + "/rootfile-" + id
 
 	rootFile, err := os.Create(rootFilename)
 	exitOnError("when opening rootfile", 67, err)
@@ -78,7 +82,7 @@ func main() {
 	exitOnError("chmod'ing rootFile", 69, err)
 
 	// TODO: factor with root file creation (eg. createSharedScript())
-	var userFilename string = sharedTmpDir + "/userfile" // TODO
+	var userFilename string = sharedTmpDir + "/userfile-" + id
 	userFile, err := os.Create(userFilename)
 	exitOnError("when opening userFile", 70, err)
 
@@ -100,7 +104,6 @@ func main() {
 	// Create user
 	// TODO: read from current user information
 
-	userName := getUsername()
 	uid := getUid()
 
 	if *optVerbose {
