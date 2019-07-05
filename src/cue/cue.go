@@ -108,15 +108,28 @@ func main() {
 		exitOnError("writing to rootFile", 68, err)
 	}
 
-	_, err = rootFile.WriteString("useradd " + userName + " --uid=" + uid + " --shell /bin/sh > /dev/null\n")
-	exitOnError("writing to rootFile", 68, err)
+	// Create user and setup sudo - this varies by the nature of the underlying
+	// tooling, which for now can be `debian` style (by default), or `redhat`
+	// style, set by the CUE_USERMODE environment variable inside the container
 
-	// Diddle sudo
-
-	_, err = rootFile.WriteString(`echo '%sudo   ALL=(ALL:ALL) NOPASSWD: ALL' > /etc/sudoers
-adduser root sudo > /dev/null
-adduser ` + userName + ` sudo > /dev/null
+	_, err = rootFile.WriteString(`# switch based on user creation mode
+if [ "$CUE_USERMODE" == "debian" ] || [ "$CUE_USERMODE" == "" ] ; then
+  useradd ` + userName + ` --uid=` + uid + ` --shell /bin/sh > /dev/null
+  echo '%sudo   ALL=(ALL:ALL) NOPASSWD: ALL' > /etc/sudoers
+  adduser root sudo > /dev/null
+  adduser ` + userName + ` sudo > /dev/null
+elif [ "$CUE_USERMODE" == "redhat" ] ; then
+  useradd ` + userName + ` --uid=` + uid + ` --no-create-home --shell /bin/sh > /dev/null
+  groupadd --system sudo
+  gpasswd -a root sudo > /dev/null
+  gpasswd -a ` + userName + ` sudo > /dev/null
+  echo '%sudo   ALL=(ALL:ALL) NOPASSWD: ALL' > /etc/sudoers
+else
+  echo UNKNOWN USER MODE $CUE_USERMODE
+  exit 1
+fi
 `)
+	exitOnError("writing to rootFile", 68, err)
 
 	// Run user shell (TODO: run user command)
 	_, err = userFile.WriteString("#!/bin/bash\n")
