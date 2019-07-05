@@ -113,14 +113,10 @@ func main() {
 
 	// Diddle sudo
 
-	_, err = rootFile.WriteString("echo '%sudo   ALL=(ALL:ALL) NOPASSWD: ALL' > /etc/sudoers\n")
-	exitOnError("writing to rootFile", 68, err)
-
-	_, err = rootFile.WriteString("adduser root sudo > /dev/null\n")
-	exitOnError("writing to rootFile", 68, err)
-
-	_, err = rootFile.WriteString("adduser " + userName + " sudo > /dev/null\n")
-	exitOnError("writing to rootFile", 68, err)
+	_, err = rootFile.WriteString(`echo '%sudo   ALL=(ALL:ALL) NOPASSWD: ALL' > /etc/sudoers
+adduser root sudo > /dev/null
+adduser ` + userName + ` sudo > /dev/null
+`)
 
 	// Run user shell (TODO: run user command)
 	_, err = userFile.WriteString("#!/bin/bash\n")
