@@ -4,11 +4,14 @@ import (
 	"fmt"
 	"github.com/pborman/getopt/v2"
 	"github.com/rs/xid"
+	"math/rand"
 	"os"
 	"os/exec"
 	"os/user"
+	"strconv"
 	"strings"
 	"syscall"
+	"time"
 )
 
 var optVerbose = getopt.BoolLong("verbose", 'V', "", "output verbose progress information")
@@ -151,6 +154,12 @@ fi
 
 	_, err = rootFile.WriteString("sudo -u " + userName + " -i " + userFilename + "\n")
 	exitOnError("writing to rootFile", 68, err)
+
+	// set container name and hostname
+	uniquifier := getUniquifier(sharedTmpDir)
+	hostname := environmentName + "-" + uniquifier
+	containerName := "cue." + userName + "." + environmentName + "." + uniquifier
+	extraArgs = append(extraArgs, "--name", containerName, "--hostname", hostname)
 
 	// TODO: if $DISPLAY is set to :0, mount
 	// /tmp/.X11-unix/X0 into the container.
@@ -309,6 +318,16 @@ func getUid() string {
 	usr, err := user.Current()
 	exitOnError("Getting current user info", 77, err)
 	return usr.Uid
+}
+
+// I'd like this to return a simple small id that is
+// unique wrt other cue containers with the same user name
+// and environment name. There is no requirement for
+// sequencing. There is no requirement for the return value
+// to be a number, although it is in this implementation.
+func getUniquifier(tmpdir string) string {
+	rand.Seed(time.Now().UTC().UnixNano())
+	return strconv.Itoa(rand.Intn(10000))
 }
 
 func logInfo(format string, a ...interface{}) (n int, err error) {
