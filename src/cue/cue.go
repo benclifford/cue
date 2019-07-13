@@ -102,8 +102,6 @@ func main() {
 	extraArgs := []string{}
 
 	// Create user
-	// TODO: read from current user information
-
 	uid := getUid()
 
 	if *optVerbose {
