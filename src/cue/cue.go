@@ -3,12 +3,12 @@ package main
 import (
 	"fmt"
 	"github.com/pborman/getopt/v2"
+	"github.com/rs/xid"
 	"os"
 	"os/exec"
 	"os/user"
 	"strings"
 	"syscall"
-        "github.com/rs/xid"
 )
 
 var optVerbose = getopt.BoolLong("verbose", 'V', "", "output verbose progress information")
@@ -61,7 +61,7 @@ func main() {
 	exitOnError("when creating temporary directory", 76, err)
 
 	userName := getUsername()
-        id := userName + "-" + xid.New().String()
+	id := userName + "-" + xid.New().String()
 
 	var rootFilename string = sharedTmpDir + "/rootfile-" + id
 
@@ -315,12 +315,12 @@ func getUid() string {
 
 func logInfo(format string, a ...interface{}) (n int, err error) {
 	if *optVerbose {
-		return fmt.Printf("cue: " + format, a...)
+		return fmt.Printf("cue: "+format, a...)
 	} else {
 		return 0, nil
 	}
 }
 
 func logError(format string, a ...interface{}) (n int, err error) {
-	return fmt.Printf("cue: ERROR: " + format, a...)
+	return fmt.Printf("cue: ERROR: "+format, a...)
 }
