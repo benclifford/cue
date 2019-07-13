@@ -14,32 +14,32 @@ import (
 var optVerbose = getopt.BoolLong("verbose", 'V', "", "output verbose progress information")
 
 func main() {
-	logInfo("cue: starting\n")
+	logInfo("starting\n")
 	var optPrivileged = getopt.BoolLong("privileged", 'P', "", "add assorted extra privileges")
 
 	var optExtra = getopt.StringLong("docker-args", 'D', "", "add extra docker command-line arguments")
 
 	getopt.Parse()
 
-	logInfo("cue: parsed options\n")
+	logInfo("parsed options\n")
 
 	var environmentName string
 
 	var cmdlineArgs = getopt.Args()
 
 	if len(cmdlineArgs) < 1 {
-		logInfo("cue: usage: cue <image name> [cmd]\n")
+		logInfo("usage: cue <image name> [cmd]\n")
 		os.Exit(75)
 	}
 
 	environmentName = cmdlineArgs[0]
 
-	logInfo("cue: environment: %s\n", environmentName)
+	logInfo("environment: %s\n", environmentName)
 
 	var imageId string
 	imageId = resolveNameToImage(environmentName)
 
-	logInfo("cue: image ID: %s\n", imageId)
+	logInfo("image ID: %s\n", imageId)
 
 	// TODO: prep docker commandline, root and user prep files in
 	//       thematic stages
@@ -54,9 +54,9 @@ func main() {
 	// to still start up properly)
 
 	var sharedTmpDir string = getHomeDir() + "/tmp/cue" // TODO
-	logInfo("cue: shared temporary directory: %s\n", sharedTmpDir)
+	logInfo("shared temporary directory: %s\n", sharedTmpDir)
 
-	logInfo("cue: creating temporary directory\n")
+	logInfo("creating temporary directory\n")
 	err := os.MkdirAll(sharedTmpDir, 0755)
 	exitOnError("when creating temporary directory", 76, err)
 
@@ -161,7 +161,7 @@ fi
 
 	display := os.Getenv("DISPLAY")
 	if display == ":0" {
-		logInfo("cue: mounting X server\n")
+		logInfo("mounting X server\n")
 		extraArgs = append(extraArgs, "-v", "/tmp/.X11-unix/X0:/tmp/.X11-unix/X0")
 		_, err = userFile.WriteString("export DISPLAY=:0\n")
 		exitOnError("writing to userFile", 73, err)
@@ -171,7 +171,7 @@ fi
 	ex := *optExtra
 	if ex != "" {
 		axs := strings.Split(*optExtra, " ")
-		logInfo("cue: docker extra args: %d >%s<\n", len(axs), ex)
+		logInfo("docker extra args: %d >%s<\n", len(axs), ex)
 		extraArgs = append(extraArgs, axs...)
 	}
 
@@ -208,7 +208,7 @@ fi
 
 	exitStatus := runImage(imageId, rootFilename, extraArgs, *optPrivileged)
 
-	logInfo("cue: done\n")
+	logInfo("done\n")
 	os.Exit(exitStatus)
 }
 
@@ -228,7 +228,7 @@ func runImage(imageId string, rootFile string, dockerArgs []string, privileged b
 	if privileged {
 		// volume mount /dev/bus/usb: if not, a /dev/bus/usb is created that appears to be a replicate of the container start time /dev/bus/usb, not the "live" version with new devices.
 		// forward port 8080 for MSE development
-		fmt.Print("cue: runImage: adding extra privileges\n")
+		logInfo("runImage: adding extra privileges\n")
 		argsPrivileged = []string{"-v", "/dev/bus/usb:/dev/bus/usb", "--privileged", "-p", "8080"}
 
 	}
@@ -244,7 +244,7 @@ func runImage(imageId string, rootFile string, dockerArgs []string, privileged b
 	status, err := process.Wait()
 	exitOnError("waiting for Docker container process", 66, err)
 
-	logInfo("cue: runImage: docker container process finished with status: %s\n", status)
+	logInfo("runImage: docker container process finished with status: %s\n", status)
 
 	ws := status.Sys().(syscall.WaitStatus)
 
@@ -270,7 +270,7 @@ func resolveNameToImage(environment string) string {
 	environmentPath := dockerfileLibrary + "/" + environment
 
 	if stat, err := os.Stat(environmentPath); err == nil && stat.IsDir() {
-		logInfo("cue: resolveNameToImage: environment directory exists - using docker build\n")
+		logInfo("resolveNameToImage: environment directory exists - using docker build\n")
 		cmd := "docker"
 
 		username := getUsername()
@@ -280,17 +280,17 @@ func resolveNameToImage(environment string) string {
 		output, err := exec.Command(cmd, args...).CombinedOutput()
 		exitOnError("running Docker build", 64, err)
 
-		logInfo("cue: resolveNameToImage: successful output from docker build:\n%s\n", output)
+		logInfo("resolveNameToImage: successful output from docker build:\n%s\n", output)
 		return strings.TrimSpace(string(output))
 	} else {
-		logInfo("cue: resolveNameToImage: environment directory does not exist - using name as raw docker image identifier\n")
+		logInfo("resolveNameToImage: environment directory does not exist - using name as raw docker image identifier\n")
 		return strings.TrimSpace(environment)
 	}
 }
 
 func exitOnError(message string, exitCode int, err error) {
 	if err != nil {
-		logError("cue: ERROR: %s: %s\n", message, err)
+		logError("%s: %s\n", message, err)
 		os.Exit(exitCode)
 	}
 }
@@ -315,12 +315,12 @@ func getUid() string {
 
 func logInfo(format string, a ...interface{}) (n int, err error) {
 	if *optVerbose {
-		return fmt.Printf(format, a...)
+		return fmt.Printf("cue: " + format, a...)
 	} else {
 		return 0, nil
 	}
 }
 
 func logError(format string, a ...interface{}) (n int, err error) {
-	return fmt.Printf(format, a...)
+	return fmt.Printf("cue: ERROR: " + format, a...)
 }
