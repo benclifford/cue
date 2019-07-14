@@ -155,10 +155,11 @@ fi
 	_, err = rootFile.WriteString("sudo -u " + userName + " -i " + userFilename + "\n")
 	exitOnError("writing to rootFile", 68, err)
 
+        sanitisedEnvironmentName := strings.Replace(environmentName, ".", "-", -1)
 	// set container name and hostname
 	uniquifier := getUniquifier(sharedTmpDir)
-	hostname := environmentName + "-" + uniquifier
-	containerName := "cue." + userName + "." + environmentName + "." + uniquifier
+	hostname := sanitisedEnvironmentName + "-" + uniquifier
+	containerName := "cue." + userName + "." + sanitisedEnvironmentName + "." + uniquifier
 	extraArgs = append(extraArgs, "--name", containerName, "--hostname", hostname)
 
 	// TODO: if $DISPLAY is set to :0, mount
