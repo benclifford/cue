@@ -152,7 +152,7 @@ fi
 	_, err = rootFile.WriteString("sudo -u " + userName + " -i " + userFilename + "\n")
 	exitOnError("writing to rootFile", 68, err)
 
-        sanitisedEnvironmentName := strings.Replace(environmentName, ".", "-", -1)
+	sanitisedEnvironmentName := strings.Replace(environmentName, ".", "-", -1)
 	// set container name and hostname
 	uniquifier := getUniquifier(sharedTmpDir)
 	hostname := sanitisedEnvironmentName + "-" + uniquifier
