@@ -18,8 +18,6 @@ var optVerbose = getopt.BoolLong("verbose", 'V', "", "output verbose progress in
 
 func main() {
 	logInfo("starting\n")
-	var optPrivileged = getopt.BoolLong("privileged", 'P', "", "add assorted extra privileges")
-
 	var optExtra = getopt.StringLong("docker-args", 'D', "", "add extra docker command-line arguments")
 
 	getopt.Parse()
@@ -214,13 +212,13 @@ fi
 	err = userFile.Close()
 	exitOnError("closing userFile", 71, err)
 
-	exitStatus := runImage(imageId, rootFilename, extraArgs, *optPrivileged)
+	exitStatus := runImage(imageId, rootFilename, extraArgs)
 
 	logInfo("done\n")
 	os.Exit(exitStatus)
 }
 
-func runImage(imageId string, rootFile string, dockerArgs []string, privileged bool) int {
+func runImage(imageId string, rootFile string, dockerArgs []string) int {
 	attributes := os.ProcAttr{
 		Files: []*os.File{os.Stdin, os.Stdout, os.Stderr},
 	}
@@ -230,18 +228,6 @@ func runImage(imageId string, rootFile string, dockerArgs []string, privileged b
 	homeDir := getHomeDir()
 
 	argsPre := []string{"docker", "run", "--rm", "-ti", "-v", homeDir + ":" + homeDir}
-
-	argsPrivileged := []string{}
-
-	if privileged {
-		// volume mount /dev/bus/usb: if not, a /dev/bus/usb is created that appears to be a replicate of the container start time /dev/bus/usb, not the "live" version with new devices.
-		// forward port 8080 for MSE development
-		logInfo("runImage: adding extra privileges\n")
-		argsPrivileged = []string{"-v", "/dev/bus/usb:/dev/bus/usb", "--privileged", "-p", "8080"}
-
-	}
-
-	argsPre = append(argsPre, argsPrivileged...)
 
 	argsPost := []string{imageId, rootFile}
 	args := append(argsPre, append(dockerArgs, argsPost...)...)
