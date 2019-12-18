@@ -133,7 +133,6 @@ fi
 `)
 	exitOnError("writing to rootFile", 68, err)
 
-	// Run user shell (TODO: run user command)
 	_, err = userFile.WriteString("#!/bin/bash\n")
 	exitOnError("writing to userFile", 73, err)
 
