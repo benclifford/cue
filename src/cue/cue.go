@@ -64,11 +64,7 @@ func main() {
 	userName := getUsername()
 	id := userName + "-" + xid.New().String()
 
-	var rootFilename string = sharedTmpDir + "/rootfile-" + id
-
-	rootFile, err := os.Create(rootFilename)
-	exitOnError("when opening rootfile", 67, err)
-
+	rootFilename, rootFile := createSharedScript(sharedTmpDir, "rootfile-"+id)
 	defer rootFile.Close()
 
 	_, err = rootFile.WriteString("#!/bin/bash\n")
@@ -79,14 +75,7 @@ func main() {
 		exitOnError("writing to rootFile", 68, err)
 	}
 
-	err = rootFile.Chmod(0755)
-	exitOnError("chmod'ing rootFile", 69, err)
-
-	// TODO: factor with root file creation (eg. createSharedScript())
-	var userFilename string = sharedTmpDir + "/userfile-" + id
-	userFile, err := os.Create(userFilename)
-	exitOnError("when opening userFile", 70, err)
-
+	userFilename, userFile := createSharedScript(sharedTmpDir, "userfile-"+id)
 	defer userFile.Close()
 
 	_, err = userFile.WriteString("#!/bin/bash\n")
@@ -96,9 +85,6 @@ func main() {
 		_, err = userFile.WriteString("echo cue: user: starting initialisation\n")
 		exitOnError("writing to userFile", 73, err)
 	}
-
-	err = userFile.Chmod(0755)
-	exitOnError("chmod'ing userFile", 72, err)
 
 	extraArgs := []string{}
 
@@ -313,6 +299,15 @@ func getUid() string {
 	usr, err := user.Current()
 	exitOnError("Getting current user info", 77, err)
 	return usr.Uid
+}
+
+func createSharedScript(sharedTmpDir string, filenameBase string) (string, *os.File) {
+	var filename string = sharedTmpDir + "/" + filenameBase
+	file, err := os.Create(filename)
+	exitOnError("when opening file "+filename, 67, err)
+	err = file.Chmod(0755)
+	exitOnError("chmod'ing file", 69, err)
+	return filename, file
 }
 
 // I'd like this to return a simple small id that is
