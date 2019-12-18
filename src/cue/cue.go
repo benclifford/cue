@@ -42,9 +42,6 @@ func main() {
 
 	logInfo("image ID: %s\n", imageId)
 
-	// TODO: prep docker commandline, root and user prep files in
-	//       thematic stages
-
 	// this directory needs to be somewhere that will be
 	// mounted inside the container, so that it will be
 	// accessible there. (BUG/FEATUREREQ: these files can
@@ -145,7 +142,7 @@ fi
 	containerName := "cue." + userName + "." + sanitisedEnvironmentName + "." + uniquifier
 	extraArgs = append(extraArgs, "--name", containerName, "--hostname", hostname)
 
-	// TODO: if $DISPLAY is set to :0, mount
+	// If $DISPLAY is set to :0, mount
 	// /tmp/.X11-unix/X0 into the container.
 	// This could be generalised to arbitrary $DISPLAY values
 	// with more effort.
