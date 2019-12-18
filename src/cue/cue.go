@@ -182,29 +182,41 @@ fi
 	// Should it be the user's default shell, which is not necessarily
 	// installed?
 
+	cmdFilename, cmdFile := createSharedScript(sharedTmpDir, "cmdfile-"+id)
+
 	if len(cmdlineArgs) == 1 {
-		_, err = userFile.WriteString("/bin/bash\n")
-		exitOnError("writing user shell to userFile", 73, err)
+		// this tests for file existence (-f) rather than executability (-x)
+		// because if there is a non-executable /cue.shell, I want to get
+		// an execution error rather than a silent ignore.
+		_, err = cmdFile.WriteString("/bin/bash\n")
+		exitOnError("writing user shell to cmdFile", 73, err)
 	} else {
 		// TODO: there will be some string escaping bug here
 		// one day, but string escaping in shell frustrates me
 		// too much to deal with at time of writing.
 		for _, element := range cmdlineArgs[1:] {
-			_, err = userFile.WriteString(element)
-			exitOnError("writing user command to userFile", 73, err)
-			_, err = userFile.WriteString(" ")
-			exitOnError("writing user command to userFile", 73, err)
+			_, err = cmdFile.WriteString(element)
+			exitOnError("writing user command to cmdFile", 73, err)
+			_, err = cmdFile.WriteString(" ")
+			exitOnError("writing user command to cmdFile", 73, err)
 		}
+
 		exitOnError("writing user command to userFile", 73, err)
 		_, err = userFile.WriteString("\n")
 		exitOnError("writing user command newline to userFile", 73, err)
 	}
+
+	_, err = userFile.WriteString("[ -f /cue.shell ] && /cue.shell " + cmdFilename + " || " + cmdFilename + "\n")
+	exitOnError("writing cmdFile invocation to userFile", 73, err)
 
 	err = rootFile.Close()
 	exitOnError("closing rootFile", 69, err)
 
 	err = userFile.Close()
 	exitOnError("closing userFile", 71, err)
+
+	err = cmdFile.Close()
+	exitOnError("closing cmdFile", 78, err)
 
 	exitStatus := runImage(imageId, rootFilename, extraArgs)
 

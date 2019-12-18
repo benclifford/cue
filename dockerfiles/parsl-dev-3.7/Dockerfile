@@ -29,3 +29,5 @@ RUN locale-gen
 # virtualenv --python=python3 .
 # pip3 install jupyter
 # 
+ADD cue.shell /
+RUN chmod a+x /cue.shell
