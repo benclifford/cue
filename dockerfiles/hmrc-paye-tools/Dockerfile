@@ -34,3 +34,6 @@ RUN echo 'export QT_X11_NO_MITSHM=1' > /etc/profile.d/hmrc.sh
 # inside this container:
 # cd ~/HMRC/payetools-rti
 # ./rti.linux
+ADD cue.shell /
+RUN chmod a+x /cue.shell
+

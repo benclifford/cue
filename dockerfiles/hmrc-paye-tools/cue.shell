@@ -1,0 +1,4 @@
+echo cue: hmrc-paye-tools: starting
+cd ~/HMRC/payetools-rti
+./rti.linux
+echo cue: hmrc-paye-tools: ending
