@@ -181,9 +181,6 @@ fi
 	cmdFilename, cmdFile := createSharedScript(sharedTmpDir, "cmdfile-"+id)
 
 	if len(cmdlineArgs) == 1 {
-		// this tests for file existence (-f) rather than executability (-x)
-		// because if there is a non-executable /cue.shell, I want to get
-		// an execution error rather than a silent ignore.
 		_, err = cmdFile.WriteString("/bin/bash\n")
 		exitOnError("writing user shell to cmdFile", 73, err)
 	} else {
@@ -202,6 +199,9 @@ fi
 		exitOnError("writing user command newline to userFile", 73, err)
 	}
 
+	// this tests for file existence (-f) rather than executability (-x)
+	// because if there is a non-executable /cue.shell, I want to get
+	// an execution error rather than a silent ignore.
 	_, err = userFile.WriteString("[ -f /cue.shell ] && /cue.shell " + cmdFilename + " || " + cmdFilename + "\n")
 	exitOnError("writing cmdFile invocation to userFile", 73, err)
 
