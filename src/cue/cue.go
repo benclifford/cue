@@ -157,7 +157,7 @@ fi
 	// Mount the SSH agent in the container if it exists
 	sshAgent, sshAgentPresent := os.LookupEnv("SSH_AUTH_SOCK")
 	if sshAgentPresent {
-		logInfo("mounting SSH agent socket")
+		logInfo("mounting SSH agent socket\n")
 		extraArgs = append(extraArgs, "-v", sshAgent+":"+sshAgent)
 		_, err = userFile.WriteString("export SSH_AUTH_SOCK=" + sshAgent + "\n")
 		exitOnError("writing to userFile", 73, err)
