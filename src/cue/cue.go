@@ -17,7 +17,6 @@ import (
 var optVerbose = getopt.BoolLong("verbose", 'V', "", "output verbose progress information")
 
 func main() {
-	logInfo("starting\n")
 	var optExtra = getopt.StringLong("docker-args", 'D', "", "add extra docker command-line arguments")
 
 	getopt.Parse()
