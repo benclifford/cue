@@ -202,7 +202,7 @@ fi
 	// this tests for file existence (-f) rather than executability (-x)
 	// because if there is a non-executable /cue.shell, I want to get
 	// an execution error rather than a silent ignore.
-	_, err = userFile.WriteString("[ -f /cue.shell ] && /cue.shell " + cmdFilename + " || " + cmdFilename + "\n")
+	_, err = userFile.WriteString("if [ -f /cue.shell ] ; then /cue.shell " + cmdFilename + " ; else " + cmdFilename + " ; fi\n")
 	exitOnError("writing cmdFile invocation to userFile", 73, err)
 
 	err = rootFile.Close()
