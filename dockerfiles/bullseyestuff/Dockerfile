@@ -23,3 +23,4 @@ RUN apt-get update && apt-get install -y less libreoffice
 RUN apt-get update && apt-get install -y texlive-latex-base texlive-latex-recommended texlive-latex-extra xpdf
 
 
+RUN apt-get update && apt-get install -y jhead
