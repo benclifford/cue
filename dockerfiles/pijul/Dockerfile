@@ -15,3 +15,5 @@ RUN cargo install --root /pijul pijul
 
 RUN echo 'export PATH=/pijul/bin:$PATH' > /etc/profile.d/pijul.sh
 
+ADD cue.shell /
+RUN chmod a+x /cue.shell

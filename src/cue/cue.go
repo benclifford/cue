@@ -8,31 +8,56 @@ import (
 	"os"
 	"os/exec"
 	"os/user"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"syscall"
 	"time"
 )
 
-var optVerbose = getopt.BoolLong("verbose", 'V', "", "output verbose progress information")
+var verbose = false
 
 func main() {
-	var optExtra = getopt.StringLong("docker-args", 'D', "", "add extra docker command-line arguments")
 
-	getopt.Parse()
+	cmdName := filepath.Base(os.Args[0])
 
-	logInfo("parsed options\n")
-
+	var dockerExtras string
 	var environmentName string
+	var cmdlineArgsBody []string
 
-	var cmdlineArgs = getopt.Args()
+	if cmdName != "cue" {
+		// need to run the container body of cue, but with a different set
+		// of arguments to the main cue mode arguments...
+		getopt.Parse()
+		var cmdlineArgs = getopt.Args()
 
-	if len(cmdlineArgs) < 1 {
-		logInfo("usage: cue <image name> [cmd]\n")
-		os.Exit(75)
+		verbose = false
+		dockerExtras = ""
+		environmentName = cmdName
+		cmdlineArgsBody = append([]string{cmdName}, cmdlineArgs[0:]...)
+
+		// cmdlineArgs[1:] <= actually all of the args without stripping first off
+	} else {
+		logError("BENC: in non-alias mode\n")
+		optVerbose := getopt.BoolLong("verbose", 'V', "", "output verbose progress information")
+
+		optExtra := getopt.StringLong("docker-args", 'D', "", "add extra docker command-line arguments")
+		getopt.Parse()
+		verbose = *optVerbose
+		dockerExtras = *optExtra
+
+		var cmdlineArgs = getopt.Args()
+
+		if len(cmdlineArgs) < 1 {
+			logInfo("usage: cue <image name> [cmd]\n")
+			os.Exit(75)
+		}
+
+		environmentName = cmdlineArgs[0]
+		cmdlineArgsBody = cmdlineArgs[1:]
 	}
 
-	environmentName = cmdlineArgs[0]
+	logInfo("parsed options\n")
 
 	logInfo("environment: %s\n", environmentName)
 
@@ -66,7 +91,7 @@ func main() {
 	_, err = rootFile.WriteString("#!/bin/bash\n")
 	exitOnError("writing to rootFile", 68, err)
 
-	if *optVerbose {
+	if verbose {
 		_, err = rootFile.WriteString("echo cue: root: starting initialisation\n")
 		exitOnError("writing to rootFile", 68, err)
 	}
@@ -77,7 +102,7 @@ func main() {
 	_, err = userFile.WriteString("#!/bin/bash\n")
 	exitOnError("writing to userFile", 73, err)
 
-	if *optVerbose {
+	if verbose {
 		_, err = userFile.WriteString("echo cue: user: starting initialisation\n")
 		exitOnError("writing to userFile", 73, err)
 	}
@@ -87,7 +112,7 @@ func main() {
 	// Create user
 	uid := getUid()
 
-	if *optVerbose {
+	if verbose {
 		_, err = rootFile.WriteString("echo cue: root: creating local user\n")
 		exitOnError("writing to rootFile", 68, err)
 	}
@@ -126,7 +151,7 @@ fi
 
 	// Run user level initialisation
 
-	if *optVerbose {
+	if verbose {
 		_, err = rootFile.WriteString("echo cue: root: running user level\n")
 		exitOnError("writing to rootFile", 68, err)
 	}
@@ -164,10 +189,9 @@ fi
 	}
 
 	// Handle docker extra args
-	ex := *optExtra
-	if ex != "" {
-		axs := strings.Split(*optExtra, " ")
-		logInfo("docker extra args: %d >%s<\n", len(axs), ex)
+	if dockerExtras != "" {
+		axs := strings.Split(dockerExtras, " ")
+		logInfo("docker extra args: %d >%s<\n", len(axs), dockerExtras)
 		extraArgs = append(extraArgs, axs...)
 	}
 
@@ -180,14 +204,14 @@ fi
 
 	cmdFilename, cmdFile := createSharedScript(sharedTmpDir, "cmdfile-"+id)
 
-	if len(cmdlineArgs) == 1 {
+	if len(cmdlineArgsBody) == 0 {
 		_, err = cmdFile.WriteString("/bin/bash\n")
 		exitOnError("writing user shell to cmdFile", 73, err)
 	} else {
 		// TODO: there will be some string escaping bug here
 		// one day, but string escaping in shell frustrates me
 		// too much to deal with at time of writing.
-		for _, element := range cmdlineArgs[1:] {
+		for _, element := range cmdlineArgsBody {
 			_, err = cmdFile.WriteString(element)
 			exitOnError("writing user command to cmdFile", 73, err)
 			_, err = cmdFile.WriteString(" ")
@@ -329,7 +353,7 @@ func getUniquifier(tmpdir string) string {
 }
 
 func logInfo(format string, a ...interface{}) (n int, err error) {
-	if *optVerbose {
+	if verbose {
 		return fmt.Printf("cue: "+format, a...)
 	} else {
 		return 0, nil

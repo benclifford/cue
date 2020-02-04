@@ -1,0 +1,11 @@
+#!/bin/bash
+# echo cue: pijul: cue.shell for pijul env
+# this gets real pijul on the path right at the start,
+# overriding any cue alias that was used to invoke
+# this environment
+export PATH=/pijul/bin:$PATH
+# echo cue: pijul: launching dollar-at, $@
+$@
+R=$?
+# echo cue: pijul: exited dollar-at with return code $R
+exit $R
