@@ -38,7 +38,6 @@ func main() {
 
 		// cmdlineArgs[1:] <= actually all of the args without stripping first off
 	} else {
-		logError("BENC: in non-alias mode\n")
 		optVerbose := getopt.BoolLong("verbose", 'V', "", "output verbose progress information")
 
 		optExtra := getopt.StringLong("docker-args", 'D', "", "add extra docker command-line arguments")
