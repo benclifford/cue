@@ -15,3 +15,5 @@ RUN apt-get update && apt-get install -y cargo
 RUN apt-get update && apt-get install -y erlang
 RUN apt-get update && apt-get install -y erlang-jiffy
 
+# opencv
+RUN apt-get update && apt-get install -y python-opencv
