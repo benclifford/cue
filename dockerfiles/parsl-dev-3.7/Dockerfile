@@ -17,6 +17,13 @@ RUN apt-get update && apt-get install -y procps
 # for building documentation
 RUN apt-get update && apt-get install -y pandoc
 
+# for monitoring visualization
+RUN apt-get update && apt-get install -y graphviz wget
+
+# for commandline access to monitoring database
+RUN apt-get update && apt-get install -y sqlite3
+
+
 # flake8 needs locales to be installed, otherwise
 # it encounters some kind of decoding error reading
 # the config file
