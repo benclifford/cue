@@ -1,4 +1,8 @@
 echo cue: hmrc-paye-tools: starting
 cd ~/HMRC/payetools-rti
 ./rti.linux
+
+echo dumping to shell to see if autoupdater can run now. run ./rti.linux to start again if you want
+bash
+
 echo cue: hmrc-paye-tools: ending
