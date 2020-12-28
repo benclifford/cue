@@ -1,0 +1,4 @@
+echo cue: virtualenv wrapper: starting
+source ~/parsl/virtualenv/bin/activate
+$@
+echo cue: virtualenv wrapper: ending
