@@ -1,13 +1,22 @@
-FROM debian:buster
+FROM debian:testing
+
+RUN apt-get update && apt-get upgrade -y
 
 RUN apt-get update && apt-get install -y sudo
 
 RUN apt-get update && apt-get install -y certbot
 
 # run this container like this:
-# cue -D "-v /home/benc/etc-letsencrypt:/etc/letsencrypt" certbot sudo -i certbot certonly --manual -d '*.cqx.ltd.uk'
+# cue -D "--privileged -v /home/benc/etc-letsencrypt:/etc/letsencrypt" certbot sudo -i certbot certonly --manual -d '*.cqx.ltd.uk'
 # (certbot renew doesnt work with manual/DNS mode for some reason, but certonly figures out it needs to renew...)
 # (and there will be some manual DNS interaction needed which is why --manual is needed)
+
+# --privileged is needed when running with recent debian:testing but older
+# (pre 5.0?) linux kernels because syscall version detection for filesystem
+# operations is sabotaged by docker/libseccomp returning a permission
+# failure rather than an unknown syscall error. --privileged stops that
+# permission failure happening. This need for --privileged should go away
+# when the host system is recent enough to know about the new syscall.
 
 #IMPORTANT NOTES:
 # - Congratulations! Your certificate and chain have been saved at:
