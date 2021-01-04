@@ -1,0 +1,4 @@
+echo cue: virtualenv wrapper: starting
+source ~/cqx/c/datastation/virtualenv/bin/activate
+/bin/bash
+echo cue: virtualenv wrapper: ending
