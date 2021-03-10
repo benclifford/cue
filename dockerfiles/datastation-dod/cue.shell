@@ -1,0 +1,7 @@
+#!/bin/bash
+
+export JAVA_HOME=/jdk1.8.0_281/
+export PATH=/jdk1.8.0_281/bin:$PATH
+export PATH=/elasticsearch-7.11.1/bin:$PATH
+
+$@
