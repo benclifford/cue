@@ -18,7 +18,7 @@ ADD jdk-8u281-linux-x64.tar.gz /
 
 # Install elasticsearch
 # quickstart says v6  or above.
-RUN curl -O https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.11.1-linux-x86_64.tar.gz
+RUN curl -O https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.0.0.tar.gz
 
 RUN tar xzvf elasticsearch*.tar.gz
 
@@ -33,10 +33,11 @@ RUN adduser --system elastic
 # Default elasticsearch wants to write into the logs/ subdirectory
 # RUN chmod a+rw /elasticsearch-7.11.1/logs/
 
-RUN chown -R elastic /elasticsearch-7.11.1/
+RUN chown -R elastic /elasticsearch-*/
 
 # quickstart guide set of prereqs
 RUN apt-get update && apt-get install -y pkg-config libpng-dev libfreetype6-dev libblas-dev liblapack-dev lib32ncurses5-dev
+
 # my extra discovered pre-reqs
 RUN apt-get update && apt-get install -y python3-dev libpq-dev g++ virtualenv libreadline-dev make
 
