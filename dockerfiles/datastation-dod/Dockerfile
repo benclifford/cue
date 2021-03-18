@@ -39,7 +39,22 @@ RUN chown -R elastic /elasticsearch-*/
 RUN apt-get update && apt-get install -y pkg-config libpng-dev libfreetype6-dev libblas-dev liblapack-dev lib32ncurses5-dev
 
 # my extra discovered pre-reqs
-RUN apt-get update && apt-get install -y python3-dev libpq-dev g++ virtualenv libreadline-dev make
+RUN apt-get update && apt-get install -y libpq-dev g++ virtualenv libreadline-dev make
+
+# python3.6 install because neither python 3.5 (from this debian) nor python 3.7 (from next debian) is suitable at the moment.
+# instructions from https://gist.github.com/mattseymour/08456b01c467859fba625ba5711fa08e
+
+RUN apt-get update && apt-get install -y build-essential checkinstall
+RUN apt-get update && apt-get install -y libbz2-dev libc6-dev libgdbm-dev libncursesw5-dev libreadline-gplv2-dev libssl-dev libsqlite3-dev tk-dev
+
+RUN curl -O https://www.python.org/ftp/python/3.6.13/Python-3.6.13.tgz
+RUN tar xzf Python-3.6.13.tgz
+
+WORKDIR /Python-3.6.13
+
+RUN ./configure
+RUN make
+RUN make install
 
 ADD cue.shell /
 RUN chmod a+x /cue.shell
