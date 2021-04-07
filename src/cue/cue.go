@@ -171,7 +171,7 @@ fi
 	// with more effort.
 
 	display := os.Getenv("DISPLAY")
-	if display == ":0" {
+	if display == ":0" || display == ":0.0" {
 		logInfo("mounting X server\n")
 		extraArgs = append(extraArgs, "-v", "/tmp/.X11-unix/X0:/tmp/.X11-unix/X0")
 		_, err = userFile.WriteString("export DISPLAY=:0\n")
