@@ -290,6 +290,9 @@ func runImage(imageId string, rootFile string, dockerArgs []string) int {
 
 func resolveNameToImage(environment string) string {
 
+        // trim off any .cue suffix which is used by ssh proxycommand mode
+        environment =  strings.TrimSuffix(environment, ".cue")
+
 	dockerfileLibrary := getHomeDir() + "/src/cue/dockerfiles/"
 	environmentPath := dockerfileLibrary + "/" + environment
 
