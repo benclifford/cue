@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/mattn/go-isatty"
 	"github.com/pborman/getopt/v2"
 	"github.com/rs/xid"
 	"math/rand"
@@ -252,7 +253,11 @@ func runImage(imageId string, rootFile string, dockerArgs []string) int {
 
 	homeDir := getHomeDir()
 
-	argsPre := []string{"docker", "run", "--rm", "-ti", "-v", homeDir + ":" + homeDir}
+	argsPre := []string{"docker", "run", "--rm", "-i", "-v", homeDir + ":" + homeDir}
+
+	if isatty.IsTerminal(os.Stdout.Fd()) {
+		argsPre = append(argsPre, "-t")
+	}
 
 	argsPost := []string{imageId, rootFile}
 	args := append(argsPre, append(dockerArgs, argsPost...)...)
