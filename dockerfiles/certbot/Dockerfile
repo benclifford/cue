@@ -4,10 +4,15 @@ RUN apt-get update && apt-get upgrade -y
 
 RUN apt-get update && apt-get install -y sudo
 
-RUN apt-get update && apt-get install -y certbot
+RUN apt-get update && apt-get install -y certbot python3-certbot-dns-rfc2136
 
 # run this container like this:
-# cue -D "--privileged -v /home/benc/etc-letsencrypt:/etc/letsencrypt" certbot sudo -i certbot certonly --manual -d '*.cqx.ltd.uk'
+
+# NEW: with dynamic DNS working:
+# cue -D "--privileged -v /home/benc/etc-letsencrypt:/etc/letsencrypt" certbot sudo -i certbot certonly --dns-rfc2136 -d '*.cqx.ltd.uk' --dns-rfc2136-credentials /etc/letsencrypt/rfc2136.ini --verbose
+
+
+# OLD: cue -D "--privileged -v /home/benc/etc-letsencrypt:/etc/letsencrypt" certbot sudo -i certbot certonly --manual -d '*.cqx.ltd.uk'
 # (certbot renew doesnt work with manual/DNS mode for some reason, but certonly figures out it needs to renew...)
 # (and there will be some manual DNS interaction needed which is why --manual is needed)
 
