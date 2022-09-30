@@ -14,7 +14,9 @@ RUN apt-get update && apt-get install -y youtube-dl sox libsox-fmt-all
 RUN apt-get update && apt-get install -y direwolf gqrx-sdr
 
 # pics
-RUN apt-get update && apt-get install -y less gthumb
+# ufraw-batch is used by imagemagic to process .CR2 files but isn't installed
+# as part of imagemagick's dependencies
+RUN apt-get update && apt-get install -y less gthumb imagemagick ufraw-batch
 
 # office
 RUN apt-get update && apt-get install -y less libreoffice
