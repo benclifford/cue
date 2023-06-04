@@ -125,6 +125,7 @@ func main() {
 if [ "$CUE_USERMODE" == "debian" ] || [ "$CUE_USERMODE" == "" ] ; then
   useradd ` + userName + ` --uid=` + uid + ` --shell /bin/sh > /dev/null
   echo '%sudo   ALL=(ALL:ALL) NOPASSWD: ALL' > /etc/sudoers
+  echo 'root   ALL=(ALL:ALL) NOPASSWD: ALL' > /etc/sudoers
   adduser root sudo > /dev/null
   adduser ` + userName + ` sudo > /dev/null
 elif [ "$CUE_USERMODE" == "redhat" ] ; then
