@@ -1,0 +1,4 @@
+# echo cue: virtualenv wrapper: starting
+# source ~/parsl/academy/virtualenv-trixie/bin/activate
+# /bin/bash $@
+# echo cue: virtualenv wrapper: ending
