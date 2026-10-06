@@ -18,6 +18,7 @@ ii. build cue by hand inside such a container:
   sudo -i   # to get profiles run, to get 'go' on the path
   cd /cue
   export GOPATH=$(pwd)
+  cd /cue/src/cue
   go get cue
   go install cue
 
@@ -31,6 +32,7 @@ now rebuild cue inside godev:
 
  cd ~/cue
  export GOPATH=$(pwd)
+ cd ~/cue/src/cue
  go get cue 
  go install cue
 
